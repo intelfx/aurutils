@@ -176,7 +176,14 @@ while true; do
             makechrootpkg_makepkg_args+=(--nocheck) ;;
         --makepkg-args|--margs)
             shift; IFS=, read -a arg -r <<< "$1"
-            makepkg_args+=("${arg[@]}")
+            for a in "${arg[@]}"; do
+                case "$a" in
+                    -C|--cleanbuild|--skipinteg|--skipchecksums|--skipppgcheck|--holdver|--noprepare)
+                        makepkg_common_args+=("$a") ;;
+                    *)
+                        makepkg_args+=("$a") ;;
+                esac
+            done
             makechrootpkg_makepkg_args+=("${arg[@]}") ;;
         # repo-add options
         -v|--verify)
