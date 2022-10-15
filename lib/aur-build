@@ -170,7 +170,15 @@ while true; do
         --makepkg-args|--margs)
             shift; chroot_build_args+=(--margs "$1")
             IFS=, read -a arg -r <<< "$1"
-            makepkg_args+=("${arg[@]}") ;;
+            for a in "${arg[@]}"; do
+                case "$a" in
+                    -C|--cleanbuild|--skipinteg|--skipchecksums|--skipppgcheck|--holdver|--noprepare)
+                        makepkg_common_args+=("$a") ;;
+                    *)
+                        makepkg_args+=("$a") ;;
+                esac
+            done
+            ;;
         --makechrootpkg-args|--cargs)
             shift; chroot_build_args+=(--cargs "$1") ;;
         # repo-add options
