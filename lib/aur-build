@@ -11,7 +11,7 @@ PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 unset -v CDPATH
 
 # default options
-chroot=0 no_sync=0 overwrite=0 sign_pkg=0 run_pkgver=0 truncate=1 status=0
+chroot=0 no_sync=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1 status=0
 
 # default arguments (empty)
 chroot_args=() chroot_build_args=() sync_args=() repo_args=() repo_add_args=()
@@ -82,7 +82,7 @@ fi
 opt_short='a:d:D:U:AcCfnrsvzLNRST'
 opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'verify' 'directory:' 'no-sync' 'pacman-conf:' 'remove' 'pkgver'
-          'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new'
+          'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new' 'dry-run'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'cleanbuild' 'cargs:'
@@ -114,6 +114,8 @@ while true; do
         --buildscript)
             shift; buildscript=$1; makepkg_common_args+=(-p "$1")
             makepkg_pkglist_args+=(-p "$1") ;;
+        --dry-run)
+            dry_run=1 ;;
         --nosync|--no-sync)
             no_sync=1 ;;
         --makepkg-conf)
@@ -372,14 +374,25 @@ while IFS= read "${read_args[@]}" -ru "$fd" path; do
     # before builds. If so, the build is skipped and the path is passed to
     # repo-add (create_package=0). If no paths are available, the package is
     # assumed to not exist and the build proceeds as usual (create_package=1).
-    if (( ! overwrite )); then
+    if (( ! overwrite )) || (( dry_run )); then
         exists=()
+
         #shellcheck disable=SC2086
-        while read -r pkgpath; do
-            [[ -f $pkgpath ]] && exists+=("$pkgpath")
-        done < <(PKGDEST="$db_root" ${AUR_BUILD_PKGLIST:-aur build--pkglist} "${makepkg_pkglist_args[@]}")
+        while IFS=':' read -r pkgbase pkgpath; do
+            if [[ -f $pkgpath ]]; then
+                (( dry_run )) && printf '%s:%s:%s\n' exist "$pkgbase" "file://$pkgpath"
+                exists+=("$pkgpath")
+            else
+                (( dry_run )) && printf '%s:%s:%s\n' build "$pkgbase" "file://$pkgpath"
+            fi
+        # pkgbase may differ from pkgname; prefix to package path with --full
+        done < <(PKGDEST="$db_root" ${AUR_BUILD_PKGLIST:-aur build--pkglist} --full "${makepkg_pkglist_args[@]}")
 
         wait "$!" # Check `build--pkglist` exit status
+
+        if (( dry_run )); then
+            continue
+        fi
 
         if (( ${#exists[@]} )); then
             printf >&2 '%s: warning: skipping existing package (use -f to overwrite)\n' "$argv0"
