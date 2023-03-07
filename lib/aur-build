@@ -12,7 +12,7 @@ PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 unset -v CDPATH
 
 # default options
-chroot=0 no_sync=0 overwrite=0 sign_pkg=0 run_pkgver=0 truncate=1
+chroot=0 no_sync=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1
 
 # default arguments (empty)
 chroot_args=() pacconf_args=() repo_args=() repo_add_args=() pkglist_args=()
@@ -92,7 +92,7 @@ opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
-          'margs:' 'buildscript:')
+          'margs:' 'buildscript:' 'dry-run')
 opt_hidden=('dump-options' 'ignorearch' 'noconfirm' 'nocheck' 'nosync' 'repo:'
             'results:' 'results-append:')
 
@@ -118,6 +118,8 @@ while true; do
         --buildscript)
             shift; makepkg_common_args+=(-p "$1")
             pkglist_args+=(-p "$1") ;;
+        --dry-run)
+            dry_run=1 ;;
         --nosync|--no-sync)
             no_sync=1 ;;
         --makepkg-conf)
@@ -357,14 +359,24 @@ while IFS= read -ru "$fd" path; do
     # before builds. If so, the build is skipped and the path is passed to
     # repo-add (create_package=0). If no paths are available, the package is
     # assumed to not exist and the build proceeds as usual (create_package=1).
-    if (( ! overwrite )); then
+    if (( ! overwrite )) || (( dry_run )); then
         exists=()
-        while read -r pkgpath; do
-            [[ -f $pkgpath ]] && exists+=("$pkgpath")
-        done < <(PKGDEST="$db_root" aur build--pkglist "${pkglist_args[@]}")
+        while IFS=':' read -r pkgbase pkgpath; do
+            if [[ -f $pkgpath ]]; then
+                (( dry_run )) && printf '%s:%s:%s\n' exist "$pkgbase" "file://$pkgpath"
+                exists+=("$pkgpath")
+            else
+                (( dry_run )) && printf '%s:%s:%s\n' build "$pkgbase" "file://$pkgpath"
+            fi
+        # pkgbase may differ from pkgname; prefix to package path with --full
+        done < <(PKGDEST="$db_root" aur build--pkglist --full "${pkglist_args[@]}")
 
         if ! wait "$!"; then
             printf >&2 '%s: warning: failed to retrieve package list\n' "$argv0"
+        fi
+
+        if (( dry_run )); then
+            continue
         fi
 
         if (( ${#exists[@]} )); then
