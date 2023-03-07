@@ -24,7 +24,7 @@ source /usr/share/makepkg/util/config.sh
 
 # option parsing
 opt_short='p:'
-opt_long=('buildscript:' 'config:' 'lint' 'srcinfo')
+opt_long=('buildscript:' 'config:' 'lint' 'srcinfo' 'full')
 opt_hidden=('dump-options')
 
 if ! parseopts "$opt_short" "${opt_long[@]}" "${opt_hidden[@]}" -- "$@"; then
@@ -39,6 +39,8 @@ while true; do
             shift; buildscript=$1 ;;
         --config)
             shift; makepkg_conf=$1 ;;
+        --full)
+            mode=pkglist_full ;;
         --srcinfo)
             mode=srcinfo ;;
         --lint)
@@ -56,6 +58,7 @@ done
 # to match makepkg behavior (e.g. aur/cemu, aur/nicotine-plus-git)
 # shellcheck disable=SC1090
 source "${buildscript-PKGBUILD}"
+pkgbase=${pkgbase:-$pkgname}
 PKGDEST=${PKGDEST:-$PWD}
 
 # PKGEXT (packagelist), CARCH (lint)
@@ -71,6 +74,11 @@ case $mode in
         source /usr/share/makepkg/util/pkgbuild.sh
         print_all_package_names
         ;;
+    pkglist_full)
+        source /usr/share/makepkg/util/pkgbuild.sh
+        print_all_package_names | while IFS= read -r; do
+            printf '%s:%s\n' "$pkgbase" "$REPLY"
+        done ;;
     srcinfo) 
         source /usr/share/makepkg/srcinfo.sh
         write_srcinfo_content
