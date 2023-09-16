@@ -271,7 +271,7 @@ if (( build )); then
     # use makechrootpkg -c as default build command (sync /root container)
     # arguments after -- are used as makechrootpkg arguments
     # shellcheck disable=SC2086
-    $AUR_PACMAN_AUTH "${auth_args[@]}" makechrootpkg -r "$directory" \
+    $AUR_PACMAN_AUTH "${auth_args[@]}" makechrootpkg -r "$directory" -M "$makepkg_conf" \
          "${bindmounts_ro[@]/#/-D}" "${bindmounts_rw[@]/#/-d}" \
          "${makechrootpkg_args[@]}" -- "${makechrootpkg_makepkg_args[@]}"
 fi >&2
