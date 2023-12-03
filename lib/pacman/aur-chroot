@@ -54,11 +54,11 @@ usage() {
     exit 1
 }
 
-opt_short='C:D:M:x:ABNTU'
+opt_short='C:D:M:x:I:ABNTU'
 opt_long=('directory:' 'pacman-conf:' 'makepkg-conf:' 'build' 'update'
           'create' 'bind:' 'bind-rw:' 'user:' 'makepkg-args:'
           'ignorearch' 'namcap' 'checkpkg' 'temp' 'makechrootpkg-args:'
-          'margs:' 'cargs:' 'nocheck' 'suffix:')
+          'margs:' 'cargs:' 'nocheck' 'suffix:' 'install:')
 opt_hidden=('dump-options' 'status' 'path')
 
 if opts=$(getopt -o "$opt_short" -l "$(args_csv "${opt_long[@]}" "${opt_hidden[@]}")" -n "$argv0" -- "$@"); then
@@ -110,6 +110,8 @@ while true; do
             makechrootpkg_args+=(-T) ;;
         --user)
             shift; makechrootpkg_args+=(-U "$1") ;;
+        -I|--install)
+			shift; makechrootpkg_args+=(-i "$1") ;;
         # XXX: cannot take arguments that contain commas (e.g. for file paths)
         --makechrootpkg-args|--cargs)
             shift; IFS=, read -a arg -r <<< "$1"
