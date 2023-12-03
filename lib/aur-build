@@ -79,14 +79,14 @@ if (( UID == 0 )) && [[ ! -v AUR_ASROOT ]]; then
 fi
 
 ## option parsing
-opt_short='a:d:D:U:AcCfnrsvzLNRST'
+opt_short='a:d:D:U:I:AcCfnrsvzLNRST'
 opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'verify' 'directory:' 'no-sync' 'pacman-conf:' 'remove' 'pkgver'
           'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new' 'dry-run'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'cleanbuild' 'cargs:'
-          'makechrootpkg-args:')
+          'makechrootpkg-args:' 'install:')
 opt_hidden=('dump-options' 'ignorearch' 'noconfirm' 'nocheck' 'nosync' 'repo:'
             'results:' 'results-append:' 'status')
 
@@ -148,6 +148,8 @@ while true; do
             chroot_args+=(--checkpkg) ;;
         -T|--temp)
             chroot_args+=(--temp) ;;
+        -I|--install)
+			shift; chroot_args+=(--install "$1") ;;
         # makepkg options (common)
         -A|--ignorearch|--ignore-arch)
             chroot_build_args+=(--ignorearch)
