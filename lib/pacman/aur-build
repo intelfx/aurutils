@@ -86,7 +86,8 @@ opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'cleanbuild' 'cargs:'
-          'makechrootpkg-args:' 'makepkg-gnupghome:' 'install:')
+          'makechrootpkg-args:' 'makepkg-gnupghome:' 'install:'
+          'cargs-no-default' 'makechrootpkg-args-no-default')
 opt_hidden=('dump-options' 'ignorearch' 'noconfirm' 'nocheck' 'nosync' 'repo:'
             'results:' 'results-append:' 'status')
 
@@ -187,6 +188,8 @@ while true; do
             ;;
         --makechrootpkg-args|--cargs)
             shift; chroot_build_args+=(--cargs "$1") ;;
+        --cargs-no-default|--makechrootpkg-args-no-default)
+            chroot_build_args+=(--makechrootpkg-args-no-default) ;;
         # repo-add options
         -v|--verify)
             repo_add_args+=(-v) ;;
