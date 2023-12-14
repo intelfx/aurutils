@@ -86,7 +86,7 @@ opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'install:' 'cleanbuild'
-          'cargs:' 'makechrootpkg-args:')
+          'cargs:' 'makechrootpkg-args:' 'cargs-no-default' 'makechrootpkg-args-no-default')
 opt_hidden=('dump-options' 'ignorearch' 'noconfirm' 'nocheck' 'nosync' 'repo:'
             'results:' 'results-append:' 'status')
 
@@ -150,6 +150,8 @@ while true; do
 			shift; chroot_args+=(--install "$1") ;;
 		--cargs|--makechrootpkg-args)
 			shift; chroot_args+=(--makechrootpkg-args "$1") ;;
+		--cargs-no-default|makechrootpkg-args-no-default)
+			chroot_args+=(--makechrootpkg-args-no-default) ;;
         # makepkg options (common)
         -A|--ignorearch|--ignore-arch)
             chroot_build_args+=(--ignorearch)
