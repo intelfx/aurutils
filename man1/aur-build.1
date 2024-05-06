@@ -189,6 +189,14 @@ Do not sync the local repository after building.
 Do not add the built packages to the local repository. This option is intended for debugging the build process.
 .
 .TP
+.BR \-\-discard
+Do not preserve the contents of the temporary directory with built
+packages, even if they were not added to the local repository
+for some reason (either due to an error, or because
+.BR \-\-no\-save
+was used). Intended to be used alongside the latter option for debugging the build process.
+.
+.TP
 .BI \-\-results= FILE
 Write colon-delimited output in the following form to
 .IR FILE :
