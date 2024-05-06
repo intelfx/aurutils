@@ -73,7 +73,7 @@ directive configured in
 is used for
 .BR pacman (8)
 sync operations regardless of this setting. See also
-.BR \-\-no\-sync .
+.BR \-\-no\-sync and \-\-no\-save .
 .
 .TP
 .BR \-f ", " \-\-force
@@ -194,6 +194,10 @@ for chroot builds
 Do not sync the local repository after building.
 .
 .TP
+.BR \-\-no\-save
+Do not add the built packages to the local repository. This option is intended for debugging the build process.
+.
+.TP
 .BI \-\-results= FILE
 Write colon-delimited output in the following form to
 .IR FILE :
@@ -208,6 +212,11 @@ or
 .BR exist ,
 for built packages and packages already available in the local
 repository, respectively.
+.IP
+(Note that if
+.BR \-\-no\-save
+is used, paths of built packages will reference the temporary directory
+instead of the local repository root.)
 .
 .SS makepkg options
 Additional options may be passed to
