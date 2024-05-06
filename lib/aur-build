@@ -11,7 +11,7 @@ PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 unset -v CDPATH
 
 # default options
-chroot=0 no_sync=0 no_save=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1 status=0
+chroot=0 no_sync=0 no_save=0 discard=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1 status=0
 
 # default arguments (empty)
 chroot_args=() chroot_build_args=() sync_args=() repo_args=() repo_add_args=()
@@ -56,8 +56,10 @@ trap_exit() {
     if [[ ! -v AUR_DEBUG ]]; then
         rm -rf -- "$tmp"
 
+        if (( discard )); then
+            rm -rf -- "$var_tmp"
         # Only remove package directory if all files were moved (#593)
-        if ! rm -df -- "$var_tmp"; then
+        elif ! rm -df -- "$var_tmp"; then
             diag_moved_packages "$var_tmp"/*
         fi
     else
@@ -82,7 +84,7 @@ fi
 opt_short='a:d:D:U:I:AcCfnrsvzLNRST'
 opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'verify' 'directory:' 'no-sync' 'no-save' 'pacman-conf:' 'remove' 'pkgver'
-          'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new' 'dry-run'
+          'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new' 'dry-run' 'discard'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'cleanbuild' 'cargs:'
@@ -104,6 +106,8 @@ while true; do
             shift; queue=$1 ;;
         -f|--force)
             overwrite=1 ;;
+        --discard)
+            discard=1 ;;
         -c|--chroot)
             chroot=1 ;;
         -d|--database|--repo)
