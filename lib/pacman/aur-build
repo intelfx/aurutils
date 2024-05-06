@@ -15,7 +15,7 @@ startdir=$PWD
 unset -v CDPATH
 
 # default options
-chroot=0 no_sync=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1 status=0
+chroot=0 no_sync=0 no_save=0 overwrite=0 sign_pkg=0 run_pkgver=0 dry_run=0 truncate=1 status=0
 
 # default arguments (empty)
 chroot_args=() chroot_base_packages=() chroot_build_args=() sync_args=() repo_args=()
@@ -73,7 +73,7 @@ fi
 ## option parsing
 opt_short='a:d:D:U:I:AcCfnrsvzLNRST'
 opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
-          'verify' 'directory:' 'no-sync' 'pacman-conf:' 'remove' 'pkgver'
+          'verify' 'directory:' 'no-sync' 'no-save' 'pacman-conf:' 'remove' 'pkgver'
           'rmdeps' 'no-confirm' 'no-check' 'ignore-arch' 'log' 'new' 'dry-run'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
@@ -111,6 +111,8 @@ while true; do
             dry_run=1 ;;
         --nosync|--no-sync)
             no_sync=1 ;;
+        --no-save)
+            no_save=1 ;;
         --makepkg-conf)
             shift; makepkg_conf=$1
             chroot_args+=(--makepkg-conf "$1") ;;
@@ -471,6 +473,15 @@ while IFS= read "${read_args[@]}" -ru "$fd" path; do
             siglist+=("$p_base".sig)
         fi
     done
+
+    if (( no_save )); then
+        if (( create_package )); then
+            if [[ -v results_file ]]; then
+                printf "build:file://$var_tmp/%s\n" "${pkglist[@]}" | tee -a "$results_file" >/dev/null
+            fi
+        fi
+        continue
+    fi
 
     if (( create_package )); then
         # pkglist/siglist contain basename
