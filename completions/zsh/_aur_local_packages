@@ -4,8 +4,8 @@
 _aur_local_packages() {
     declare -a pkgs
     local repo
-    for repo in ${(f)"$(aur repo --list-repo)"}; do
-        pkgs+=( $(aur repo -lq -d $repo 2>/dev/null) )
+    for repo in "${(@f)$(aur repo --list-repo)}"; do
+        pkgs+=( "${(@f)$(aur repo -lq -d $repo 2>/dev/null)}" )
     done
     if [[ ${#pkgs} -eq 0 ]]; then
         _message "package (no local packages found)"
