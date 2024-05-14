@@ -39,19 +39,19 @@ _aur_build_sync_args=(
     # Build args
     '*'{--margs=,--makepkg-args=}'[additional (comma separated) makepkg arguments]:arguments:_sequence __aur_complete_for
  makepkg'
-    '--makepkg-conf=[the makepkg.conf to use for makepkg, for chroot also inside the container]:configuration file: _files'
+    '--makepkg-conf=[the makepkg.conf to use for makepkg, for chroot also inside the container]:configuration file:_files'
     '(-A --ignore-arch)'{-A,--ignore-arch}'[ignore a missing or incomplete arch field in the build script]'
     '(-c --chroot)'{-c,--chroot}'[build packages inside a systemd-nspawn container with archbuild]'
-    '(-D --directory)'{-D,--directory=}'[the base directory for containers]:directory: _files -/'
+    '(-D --directory)'{-D,--directory=}'[the base directory for containers]:directory:_files -/'
     '(-f --force)'{-f,--force}'[continue the build process if a package with the same name is found]'
     '(-L --log)'{-L,--log}'[enable logging to a text file in the build directory]'
     '(-n --no-confirm)'{-n,--no-confirm}'[do not wait for user input when installing or removing build dependencies]'
     '(-r --rmdeps)'{-r,--rmdeps}'[remove dependencies installed by makepkg]'
     '(-S --sign --gpg-sign)'{-S,--sign,--gpg-sign}'[sign build packages and the database with gpg]'
     '(-T --temp)'{-T,--temp}'[build in a temporary container]'
-    '(-U --user)'{-U,--user=}'[run the host makepkg instance as the specified user]:user: _users'
-    '*--bind-rw=[bind a directory read-write to the container]:directory: _files -/'
-    '*--bind=[bind a directory read-only to the container]:directory: _files -/'
+    '(-U --user)'{-U,--user=}'[run the host makepkg instance as the specified user]:user:_users'
+    '*--bind-rw=[bind a directory read-write to the container]:directory:_files -/'
+    '*--bind=[bind a directory read-only to the container]:directory:_files -/'
 
     # repo-add
     '--new[only add packages that are not already in the database]'
@@ -60,8 +60,8 @@ _aur_build_sync_args=(
     '(-v --verify)'{-v,--verify}'[verify the pgp signature of the database before updating]'
 
     # Repo args
-    '--pacman-conf=[the pacman.conf used for syncing and retriving local repositories, for chroot also used inside the container]:configuration file: _files'
-    '--root=[the root directory for the repository]:directory: _files -/'
+    '--pacman-conf=[the pacman.conf used for syncing and retriving local repositories, for chroot also used inside the container]:configuration file:_files'
+    '--root=[the root directory for the repository]:directory:_files -/'
     '(-d --database)'{-d,--database=}'[the name of the pacman database]:repository: _aur_repositories'
 )
 
@@ -72,7 +72,7 @@ _aur-build() {
         # Note! Many flags are shared with aur-build and defined in a common $_aur_build_sync_args
 
         # Options
-        '(-a --arg-file)'{-a,--arg-file=}'[a text file describing directories containing PKGBUILD relative to the current directory]:file: _files'
+        '(-a --arg-file)'{-a,--arg-file=}'[a text file describing directories containing PKGBUILD relative to the current directory]:file:_files'
         '--dry-run[display the package names without building anything]'
         '--no-sync[do not sync the local repository after building]'
         '--pkgver[run makepkg -od before checking existing packages]'
@@ -85,7 +85,7 @@ _aur-build() {
         '--no-check[do not run the check function in the PKGBUILD]'
         '(-s --syncdeps)'{-s,--syncdeps}'[install missing dependencies using pacman]'
         '(-C --clean)'{-C,--clean}'[clean up leftover work files and directories after a successful build]'
-        '--buildscript[read the package script instead of the PKGBUILD]:: _files'
+        '--buildscript[read the package script instead of the PKGBUILD]::_files'
     )
     _arguments -s $args $_aur_build_sync_args
 }
@@ -100,18 +100,18 @@ _aur-chroot() {
         '--create[create a new container with mkarchroot]'
 
         # Other options
-        '*--bind-rw=[bind a directory read-write to the container]:directory: _files -/'
-        '*--bind=[bind a directory read-only to the container]:directory: _files -/'
-        '(-D --directory)'{-D,--directory=}'[the base directory for containers]:directory: _files -/'
+        '*--bind-rw=[bind a directory read-write to the container]:directory:_files -/'
+        '*--bind=[bind a directory read-only to the container]:directory:_files -/'
+        '(-D --directory)'{-D,--directory=}'[the base directory for containers]:directory:_files -/'
         '*'{--makechrootpkg-args=,--cargs=}'[additional (comma separated) arguments to be passed to makechrootpkg for --build]:arguments:_sequence __aur_complete_for
      makechrootpkg'
         '*'{--makepkg-args=,--margs=}'[additional (comma separated) makepkg arguments for makechrootpkg]:arguments:_sequence __aur_complete_for
      makepkg'
-        '(-M --makepkg-conf)'{-M,--makepkg-conf=}'[the makepkg.conf to use inside the container]:configuration file: _files'
+        '(-M --makepkg-conf)'{-M,--makepkg-conf=}'[the makepkg.conf to use inside the container]:configuration file:_files'
         '--path[print the path to the container template]'
         
         + '(pacman_conf)'
-        {-C,--pacman-conf=}'[the pacman.conf to use inside the container]:configuration file: _files'
+        {-C,--pacman-conf=}'[the pacman.conf to use inside the container]:configuration file:_files'
         {-x,--suffix=}'[the path component SUFFIX in the pacman configuration, default to extra]:suffix: '
 
         + positional
@@ -161,7 +161,7 @@ _aur-fetch() {
     args=(
         '--existing[if a package has no matching repository on AUR, ignore it instead of running git-clone]'
         '(-r --recurse)'{-r,--recurse}'[download packages and their dependencies with aur-depends]'
-        '--results=[write colon-delimited output to FILE]:file: _files'
+        '--results=[write colon-delimited output to FILE]:file:_files'
         '--discard[discard uncommited changes if git-rebase or git-merge result in new commits]'
         "(--sync)--rebase[${sync_types[rebase]}, alias for --sync=rebase]"
         "(--sync)--reset[${sync_types[reset]}, alias for --sync=reset]"
@@ -181,7 +181,7 @@ _aur-graph() {
     local -a args
 
     args=(
-        '*:files: _files -g .SRCINFO'
+        '*:files:_files -g .SRCINFO'
     )
     _arguments -s $args
 }
@@ -227,7 +227,7 @@ _aur-repo() {
 
     args=(
         + '(operations)'
-        '(upgrade)'{-F,--attr=}'[list the attribute ATTR]:attr: __aur_list_attributes'
+        '(upgrade)'{-F,--attr=}'[list the attribute ATTR]:attr:__aur_list_attributes'
         '(upgrade)'{-l,--list}'[list the contents of a local repository]'
         '(upgrade)'{-t,--table}'[list the contents of a local repository with more detail]'
         '(upgrade)'{-J,--json}'[list the local repository in JSON format]'
@@ -243,10 +243,10 @@ _aur-repo() {
 
         + options
         '--status[print status information to standard output]'
-        '(-c --config)'{-c,--config=}'[set an alternate pacman.conf file path]:config file: _files'
+        '(-c --config)'{-c,--config=}'[set an alternate pacman.conf file path]:config file:_files'
         '(-d --database --repo)'{-d,--database=,--repo=}'[the name of a pacman repository]:repository: _aur_repositories --all'
         '(-q --quiet)'{-q,--quiet}'[only print package names]'
-        '(-r --root)'{-r,--root=}'[the path to the root of a local repository]:path: _files -/'
+        '(-r --root)'{-r,--root=}'[the path to the root of a local repository]:path:_files -/'
         '(-S --sync)'{-S,--sync}'[query repositories in DBPATH/sync]'
     )
     _arguments -s $args
@@ -257,9 +257,9 @@ _aur-repo-filter() {
 
     args=(
         '(-a --all --sync)'{-a,--all,--sync}'[query all available pacman repositories (pacsift --sync)]'
-        '--config=[set an alternate pacman.conf file path]:config file: _files'
+        '--config=[set an alternate pacman.conf file path]:config file:_files'
         '(-d --database)'{-d,--database=}'[restrict output to pacman repository]:repository: _aur_repositories --all'
-        '--sysroot[set an alternative system root]:path: _files -/'
+        '--sysroot[set an alternative system root]:path:_files -/'
     )
     _arguments -s $args
 }
@@ -311,7 +311,7 @@ _aur-srcver() {
     local -a args
 
     args=(
-        '--buildscript[read the package script instead of the PKGBUILD]:: _files'
+        '--buildscript[read the package script instead of the PKGBUILD]::_files'
         {-j,--jobs=}'[set the amount of makepkg processes run in parallel]:number of jobs: '
         '--no-prepare[do not run the prepare() function in the PKGBUILD]'
         '*:pkgbase: _aur_packages --pkgbase'
@@ -328,12 +328,12 @@ _aur-sync() {
         
         '--continue[do not download package files]'
         '--format=[generate diffs with git-diff or git-log]:format:((diff\:use\ git-diff log\:use\ git-log))'
-        '--ignore-file=[ignore package upgrades listed in FILE]:file: _files'
+        '--ignore-file=[ignore package upgrades listed in FILE]:file:_files'
         '--no-check[do not handle checkdepends]'
         '--no-graph[do not verify the AUR dependency graph with aur-graph]'
         '--no-view[do not present build files for inspection]'
         '--pkgver[run makepkg -od --noprepare before the build process]'
-        '(--no-provides)--provides-from=:directories: _dir_list -s, -S'
+        '(--no-provides)--provides-from=:directories:_dir_list -s, -S'
         '(--provides-from)--no-provides[do not take virtual dependencies (provides) in pacman sync repositories into account to resolve package dependencies]'
         '(-o --no-build)'{-o,--no-build}'[print target packages and their paths instead of building them]'
         '(-u --upgrades)'{-u,--upgrades}'[update all obsolete AUR packages in a local repository]'
@@ -359,7 +359,7 @@ _aur-vercmp() {
     args=(
         '(-a --all -c --current)'{-a,--all}'[show packages with an older or equal version in the AUR]'
         '(-c --current -a --all)'{-c,--current}'[changes format to print packages with an equal or newer version to stdout]'
-        '(-p --path)'{-p,--path}'[read package versions from FILE instead of the AUR]: _files'
+        '(-p --path)'{-p,--path}'[read package versions from FILE instead of the AUR]:_files'
         '(-q --quiet)'{-q,--quiet}'[only print package names to standard output]'
         '(-u --upair)'{-u,--upair}'[print unpairable lines from file FILENUM where filenum is 1 or 2]:file number:(1 2)'
     )
@@ -371,10 +371,10 @@ _aur-view() {
 
     args=(
         '--format=[generate diffs with git-diff or git-log]:format:((diff\:use\ git-diff log\:use\ git-log))'
-        '(-a --arg-file)'{-a,--arg-file}'[a textfile describing git repositories relative to the current directory]: file: _files'
+        '(-a --arg-file)'{-a,--arg-file}'[a textfile describing git repositories relative to the current directory]:file:_files'
         '--revision=[the revision used for comparing changes (defaults to HEAD)]:revision: '
         '--no-patch[suppress patch output, only showing a summary]'
-        '(-a --arg-file)*:repositories: _files -/'
+        '(-a --arg-file)*:repositories:_files -/'
     )
     _arguments -s $args
 }
