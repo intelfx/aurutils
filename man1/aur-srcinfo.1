@@ -1,0 +1,138 @@
+.TH AUR-REPO 1 2022-03-12 AURUTILS
+.SH NAME
+aur\-srcinfo \- generate, parse or pretty-print .SRCINFO files
+.
+.SH SYNOPSIS
+.SY "aur srcinfo"
+.OP \-C directory
+.OP \-NUPJ
+.OP \-Q jq-arg-or-expr\ \fR...
+.SY "aur srcinfo"
+.OP \-M
+.OP \-NUPJ
+.OP \-Q jq-arg-or-expr\ \fR...
+.RI [ directories... ]
+.YS
+.
+.SH DESCRIPTION
+.B aur\-srcinfo
+helps maintain or process
+.I .SRCINFO
+files used by
+.BR makepkg (8)
+as a companion file format alongside
+.IR PKGBUILD s.
+
+In particular, it serves to generate or update
+.I .SRCINFO
+files from
+.I PKGBUILD
+content (which happens automatically, unless
+.BR \-N ", " \-\-no\-update
+is passed), print them to stdout (which is the default action),
+parse them into a JSON-like human-readable format
+.RB ( \-P ", " \-\-parse )
+or actual JSON
+.RB ( \-J ", " \-\-json ),
+or pipe them into
+.BR jq (1)
+for further processing.
+
+By default, 
+.BR aur\-srcinfo
+operates on the current directory, which can be overridden with the
+.BR \-C
+option. Alternatively, the
+.BR \-M
+option may be provided, in which case
+.BR aur\-srcinfo
+will operate on multiple directories provided as positional arguments.
+
+.SH TARGET SELECTION OPTIONS
+.TP
+.BI \-C " DIRECTORY" "\fR,\fP \-\-directory=" DIRECTORY
+Operate on the given
+.IR DIRECTORY
+instead of the current working directory.
+.
+.TP
+.BR \-M ", " \-\-multiple
+Operate on multiple
+.IR directories
+provided as positional arguments.
+
+.SH OPERATIONS
+.TP
+.BR \-N ", " \-\-no\-update
+Do not update
+.IR .SRCINFO
+even if it is older than
+.IR PKGBUILD .
+.
+.TP
+.BR \-U ", " \-\-update\-only
+Do not output the
+.IR .SRCINFO ,
+only update it as necessary.
+.
+.TP
+.BR \-P ", " \-\-parse
+Pretty-print the
+.IR .SRCINFO
+contents in a human-readable JSON-like format.
+.
+.TP
+.BR \-J ", " \-\-json
+Print the
+.IR .SRCINFO
+contents in a JSON representation.
+.
+.TP
+.BI \-Q " JQ-EXPRESSION" "\fR,\fP \-\-jq=" JQ-EXPRESSION
+Pipe the JSON representation of the
+.IR .SRCINFO
+into
+.BR jq (1)
+for further processing using the provided
+.IR JQ-EXPRESSION .
+This option may be repeated to pass more than one argument to
+.BR jq (1)
+(for instance, 
+.BR -r ).
+.
+.SH EXAMPLES
+Output contents of all .SRCINFO files for locally downloaded package
+sources, updating them as necessary:
+.PP
+.EX
+  $ dirname -z **/PKGBUILD | xargs -0 aur srcinfo -M
+.EE
+.PP
+Print all pkgnames declared in the locally downloaded package sources:
+.PP
+.EX
+  $ dirname -z **/PKGBUILD | xargs -0 aur srcinfo -M -Q '.packages | keys[]' -Q -r
+.EE
+.PP
+Or, equivalently:
+.PP
+.EX
+  $ dirname -z **/PKGBUILD | xargs -0 aur srcinfo -M -J | jq -r '.packages | keys[]'
+.EE
+.PP
+.
+.SH SEE ALSO
+.ad l
+.nh
+.BR aur (1),
+.BR makepkg (8)
+.
+.SH AUTHORS
+.MT https://github.com/AladW
+Alad Wenter
+.ME ,
+.MT https://github.com/intelfx
+Ivan Shapovalov
+.ME
+.
+.\" vim: set textwidth=72:

@@ -1,0 +1,155 @@
+#!/bin/bash
+# aur-srcinfo - .SRCINFO operations
+[[ -v AUR_DEBUG ]] && set -o xtrace
+set -o errexit
+argv0=srcinfo
+PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+# Avoid CDPATH screwing with cd (#1047)
+unset -v CDPATH
+
+usage() {
+    printf >&2 'usage: %s [-C DIR]... [-NUPJ|-Q [JQ-EXPR-OR-ARG...]]\n' "$argv0"
+    printf >&2 '   or: %s          -M [-NUPJ] DIRS...\n' "$argv0"
+    printf >&2 '   or: %s             [-NUPJ] [DIR]\n' "$argv0"
+    exit 1
+}
+
+# default options
+multiple=0 update=1 mode='srcinfo'
+dirs=() jq_args=()
+rc=0
+
+args_csv() {
+    # shellcheck disable=SC2155
+    local str=$(printf '%s,' "$@")
+    printf '%s' "${str%,}"
+}
+
+update_srcinfo() {
+    if [[ .SRCINFO -ot PKGBUILD ]]; then
+        aur build--pkglist --srcinfo >.SRCINFO
+    fi
+}
+
+get_srcinfo() {
+    if [[ .SRCINFO -ot PKGBUILD ]]; then
+        if (( update )); then
+            aur build--pkglist --srcinfo | tee .SRCINFO
+        else
+            aur build--pkglist --srcinfo
+        fi
+    else
+        cat .SRCINFO
+    fi
+}
+
+## option parsing
+opt_short='MC:NUPJQ'
+opt_long=('multiple' 'directory:' 'no-update' 'update' 'parse' 'json' 'jq')
+opt_hidden=('dump-options')
+
+if opts=$(getopt -o "$opt_short" -l "$(args_csv "${opt_long[@]}" "${opt_hidden[@]}")" -n "$argv0" -- "$@"); then
+    eval set -- "$opts"
+else
+    usage
+fi
+
+unset queue revision prefix
+while true; do
+    case "$1" in
+        -M)
+            multiple=1 ;;
+        -C|--directory)
+            shift; dirs=("$1") ;;
+        -N|--no-update)
+            update=0 ;;
+        -U|--update)
+            mode='update' ;;
+        -P|--parse)
+            mode='parse' ;;
+        -J|--json)
+            mode='json' ;;
+        -Q|--jq)
+            mode='jq' ;;
+        --dump-options)
+            printf -- '--%s\n' "${opt_long[@]}" ${AUR_DEBUG+"${opt_hidden[@]}"}
+            printf -- '%s' "${opt_short}" | sed 's/.:\?/-&\n/g'
+            exit ;;
+        --) shift; break ;;
+    esac
+    shift
+done
+
+if (( multiple )) && [[ $mode == jq ]]; then
+    printf >&2 "%s: %s and %s options are mutually exclusive\n" "$argv0" "--multiple" "--jq"
+    exit 2
+fi
+
+if (( multiple )) && [[ ${dirs+set} ]]; then
+    printf >&2 "%s: %s and %s options are mutually exclusive\n" "$argv0" "--multiple" "--directory"
+    exit 2
+fi
+
+if (( ! update )) && [[ $mode == update ]]; then
+    printf >&2 "%s: %s and %s options are mutually exclusive\n" "$argv0" "--no-update" "--update"
+    exit 2
+fi
+
+if [[ $mode == jq ]]; then
+    jq_args=("$@")
+elif (( multiple )); then
+    dirs=("$@")
+elif [[ ! ${dirs+set} ]] && (( $# == 1 )); then
+    dirs=("$@")
+elif (( $# )); then
+    printf >&2 "%s: unexpected positional arguments\n" "$argv0"
+    exit 2
+fi
+
+if ! [[ ${dirs+set} ]]; then
+    dirs=(.)
+fi
+
+if [[ $mode != update ]] && ! command -v parse_srcinfo &>/dev/null; then
+    printf >&2 "%s: python-srcinfo is not installed\n" "$argv0"
+    exit 1
+fi
+
+# $1: directory (or empty for $PWD)
+handle_single_dir() (
+    local dir="$1"
+
+    if [[ $dir ]]; then
+        if ! [[ -d $dir ]]; then
+            printf >&2 "%s: %s: invalid directory\n" "$argv0" "$dir"
+            exit 2
+        fi
+
+        cd -- "$dir"
+    fi
+
+    if ! [[ -f PKGBUILD ]]; then
+        printf >&2 "%s: %s: %s does not exist\n" "$argv0" "${dir:-.}" "PKGBUILD"
+        exit 1
+    fi
+
+    case "$mode" in
+        update)
+            update_srcinfo ;;
+        srcinfo)
+            get_srcinfo ;;
+        parse)
+            get_srcinfo | parse_srcinfo ;;
+        json)
+            get_srcinfo | parse_srcinfo --json ;;
+        jq)
+            get_srcinfo | parse_srcinfo --json | jq "${jq_args[@]}" ;;
+    esac
+)
+
+for dir in "${dirs[@]}"; do
+    handle_single_dir "$dir" || rc=$?
+done
+
+exit $rc

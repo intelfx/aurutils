@@ -379,6 +379,40 @@ _aur-view() {
     _arguments -s $args
 }
 
+_aur-srcinfo() {
+    local context state state_descr line args
+    typeset -A opt_args
+    local ret=1
+
+    args=(
+        + '(targets)'
+        '(-C --directory)'{-M,--multiple}'[process multiple DIRECTORIES]'
+        '(-M --multiple)'{-C,--directory}'[cd to DIRECTORY]:directory:_files -/'
+
+        + '(mode)'
+        {-N,--no-update}'[do not write updated .SRCINFO to disk]'
+        {-U,--update}'[update .SRCINFO on disk]'
+        {-P,--parse}'[print .SRCINFO contents in a human-readable JSON-like format]'
+        {-J,--json}'[print .SRCINFO contents as JSON]'
+        {-Q,--jq}'=[run jq(1) over .SRCINFO contents as JSON]:expression:'
+        '*: :->positional'
+    )
+    _arguments -s -S $args && ret=0
+
+    case $state in
+        (positional)
+            if [[ -v opt_args[(i)targets--(M|-multiple)] ]]; then
+                _arguments -s -S '*:directories:_files -/' && ret=0
+            else
+                _nothing
+            fi
+            ;;
+    esac
+
+    return $ret
+}
+
+
 # Main entry point and handler of top level completion
 _aur() {
     local context state state_descr line
@@ -397,6 +431,7 @@ _aur() {
     cmds[repo-filter]="filter packages in the Arch Linux repositories"
     cmds[repo]="manage local repositories"
     cmds[search]="search for AUR packages"
+    cmds[srcinfo]="generate and parse .SRCINFO files"
     cmds[srcver]="list version of VCS packages"
     cmds[sync]="download and build AUR packages automatically"
     cmds[vercmp]="check packages for AUR updates"
