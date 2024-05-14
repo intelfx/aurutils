@@ -414,7 +414,7 @@ _aur() {
 
     _arguments -C \
         "1:command:((${descs} --version\:display\ version))" \
-        '*::arg:->options'
+        '*:: :->options'
 
     case $state in
         options)
