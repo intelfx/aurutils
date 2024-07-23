@@ -44,7 +44,7 @@ json_cnt2=$(bsdtar -Oxf "$core_path" "${core_entries[@]:0:2}" | aur repo-parse -
 [[ $json_cnt2 == 2 ]]
 json_cnt3=$(printf '\n' | aur repo-parse --json -)
 [[ $json_cnt3 == '[]' ]]  # 1153
-json_cnt4=$(aur repo-parse -p "$core_files_path" --search 'aaaaaaaa')
+json_cnt4=$(aur repo-parse -p "$core_files_path" --search 'aaaaaaaa' --json)
 [[ $json_cnt4 == '[]' ]]
 
 # --json output with constrained entries

@@ -1,7 +1,12 @@
-## 19.10
+## 20
 
 * `aur-sync`
   + move git `orderFile` to `XDG_CONFIG_HOME/aurutils/view/orderfile` (#1167)
+
+* `perl`
+  + move `AUR::Repo` to `aur-repo-parse`
+  + move `AUR::Depends::get` to `aur-depends::solve`
+  + move `AUR::Depends::vercmp` to `AUR::Vercmp`
 
 ## 19.9
 
