@@ -84,6 +84,14 @@ trap 'trap_exit' EXIT
 # Directory for git checksums (revisions viewed by the user, #379)
 mkdir -p -- "$AUR_VIEW_DB"
 
+# Default to showing PKGBUILD first in patch. (#399)
+orderfile=$XDG_CONFIG_HOME/aurutils/$argv0/orderfile
+mkdir -p -- "${orderfile%/*}"
+
+if [[ ! -s $orderfile ]]; then
+    printf 'PKGBUILD\n' > "$orderfile"
+fi
+
 # Take input from a file instead of redirecting stdin (#871)
 packages=()
 if [[ -v queue ]]; then
@@ -112,6 +120,9 @@ declare -A heads
 
 for pkg in "${packages[@]}"; do
     git() { command git -C "$pkg" "$@"; }
+
+    # Point git to current orderFile path (#1167)
+    git config diff.orderFile "$orderfile"
 
     # Ensure every directory is a git repository (--continue)
     if head=$(git rev-parse "${revision:-HEAD}"); then
