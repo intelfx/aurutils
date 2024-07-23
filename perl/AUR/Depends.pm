@@ -6,7 +6,7 @@ use v5.20;
 use List::Util qw(first);
 use Carp;
 use Exporter qw(import);
-our @EXPORT_OK = qw(vercmp extract prune graph get);
+our @EXPORT_OK = qw(vercmp recurse prune graph solve);
 our $VERSION = 'unstable';
 
 # Maximum number of calling the callback
@@ -18,7 +18,7 @@ AUR::Depends - Resolve dependencies from AUR package information
 
 =head1 SYNOPSIS
 
-  use AUR::Depends qw(vercmp extract depends prune graph);
+  use AUR::Depends qw(vercmp recurse depends prune graph solve);
 
 =head1 DESCRIPTION
 
@@ -85,7 +85,7 @@ sub vercmp {
     }
 }
 
-=head2 extract()
+=head2 recurse()
 
 Extracts dependency (C<$pkgdeps>) and provider (C<$pkgmap>)
 information from an array of package information hashes, retrieved
@@ -111,7 +111,7 @@ Parameters:
 
 =cut
 
-sub extract {
+sub recurse {
     my ($targets, $types, $callback) = @_;
     my @depends = @{$targets};
 
@@ -339,9 +339,9 @@ sub prune {
     return \@removals;
 }
 
-=head2 get()
+=head2 solve()
 
-High-level function which combines C<depends>, C<prune> and C<graph>.
+High-level function which combines C<recurse>, C<prune> and C<graph>.
 
 Parameters:
 
@@ -359,11 +359,11 @@ Parameters:
 
 =cut
 
-sub get {
+sub solve {
     my ($targets, $types, $callback, $opt_verify, $opt_provides, $opt_installed) = @_;
     
     # Retrieve AUR results (JSON -> dict -> extract depends -> repeat until none)
-    my ($results, $pkgdeps, $pkgmap) = extract($targets, $types, $callback);
+    my ($results, $pkgdeps, $pkgmap) = recurse($targets, $types, $callback);
 
     # Verify dependency requirements
     my ($dag, $dag_foreign) = graph($results, $pkgdeps, $pkgmap,
