@@ -243,14 +243,6 @@ mkdir -pm 0700 -- "${TMPDIR:-/tmp}/aurutils-$UID"
 tmp=$(mktemp -d --tmpdir "aurutils-$UID/$argv0.XXXXXXXX")
 trap 'trap_exit' EXIT
 
-# Default to showing PKGBUILD first in patch. (#399)
-orderfile=$XDG_CONFIG_HOME/aurutils/$argv0/orderfile
-mkdir -p -- "${orderfile%/*}"
-
-if [[ ! -s $orderfile ]]; then
-    printf 'PKGBUILD\n' > "$orderfile"
-fi
-
 if (( rotate )); then
     if { hash caesar && target=$(aur pkglist | shuf -n 1); } 2>/dev/null; then
         exec bash -c "{ aur \"$argv0\" -c \"$target\" && repo-elephant | caesar 13; } 2>&1 | caesar 13"
@@ -389,19 +381,7 @@ fi
 
 if (( download )); then
     msg >&2 "Retrieving package files"
-    aur fetch -S "${fetch_args[@]}" --discard --results "$tmp"/fetch_results - < "$tmp"/queue >&2
-
-    # shellcheck disable=SC2034
-    while IFS=: read -r mode rev_old rev path; do
-        path=${path#file://} name=${path##*/}
-
-        case $mode in
-            clone)
-                git -C "$path" config diff.orderFile "$orderfile" ;;
-            fetch|merge|rebase|reset)
-                ;;
-        esac
-    done < "$tmp"/fetch_results
+    aur fetch -S "${fetch_args[@]}" --discard - < "$tmp"/queue >&2
 else
     xargs -a "$tmp"/queue stat >/dev/null || exit 2 # ensure all directories are available
 fi
