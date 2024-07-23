@@ -36,28 +36,15 @@ my %repo_add_attributes = (
     'ISIZE'        => ['numeric', 'ISize'        ]
 );
 
-sub check_attr {
-    my ($attr) = @_;
-    return $repo_add_attributes{$attr}->[1];
-}
-sub check_type {
-    my ($attr) = @_;
-    return $repo_add_attributes{$attr}->[0];
-}
 sub check_option {
-    my ($opt, $opt_label, $attr_def) = @_;
+    my ($opt, $opt_label) = @_;
+    my $attr = $repo_add_attributes{uc($opt)};
 
-    if (length $opt) {
-        my $attr = check_attr(uc($opt));
-
-        if (not defined $attr) {
-            say STDERR "$argv0: $opt_label: unknown attribute '$opt'";
-            exit(2);
-        }
-        return $attr;
-    } else {
-        return $attr_def;
+    if (not defined $attr) {
+        say STDERR "$argv0: $opt_label: unknown attribute '$opt'";
+        exit(2);
     }
+    return $attr->[1];
 }
 
 sub parse_db {
@@ -259,7 +246,7 @@ unless (caller) {
     my $opt_table = 0;
     my $opt_quiet = 0;
     my $opt_delim;
-    my $opt_attr = "";
+    my $opt_attr;
     my @opt_db_path;
     my $opt_stdin = 0;
     my $opt_search = "" ;
@@ -306,13 +293,9 @@ unless (caller) {
         $callback = \&repo_jsonl;
         # @varargs defined in input loop
     }
-    elsif (length($opt_attr)) {
-        my $attr_label = check_attr($opt_attr);
+    elsif (defined $opt_attr) {
+        my $attr_label = check_option($opt_attr, '--attr');
 
-        if (not defined $attr_label) {
-            say STDERR "$argv0: unknown attribute '$opt_attr'";
-            exit(2);
-        }
         $callback = \&repo_attr;
         @varargs  = ($attr_label);
     }
@@ -331,12 +314,12 @@ unless (caller) {
 
     # Verify search field
     my $search = length($opt_search) ? $opt_search : "";
-    my $search_by = check_option($opt_search_by, '--search-by', 'Name');
+    my $search_by = defined($opt_search_by) ? check_option($opt_search_by, '--search-by') : 'Name';
 
     # Verify ignores field
     my %ignore;
     $ignore{$_}++ for (map { split(',', $_) } @opt_ignore);
-    my $ignore_by = check_option($opt_ignore_by, '--ignore-by', 'Name');
+    my $ignore_by = defined($opt_ignore_by) ? check_option($opt_ignore_by, '--ignore-by') : 'Name';
 
     # Chain callbacks
     my $handler = sub {

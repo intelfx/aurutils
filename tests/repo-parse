@@ -8,8 +8,8 @@ diff -u <(pacsift --repo=core | expac -S '%n\t%v' - | sort -u) \
         <(aur repo-parse -p "$core_path" --list | sort -u)
 
 # check attributes are up-to-date
-cnt1=$({ echo GROUPS; bsdtar -Oxf "$core_files_path" | grep -Po '(?<=%).+(?=%)'; } | sort -u | wc -l) \
-    cnt2=$(aur repo-parse --list-attr | wc -l)
+cnt1=$({ echo GROUPS; bsdtar -Oxf "$core_files_path" | grep -Po '(?<=%).+(?=%)'; } | sort -u | wc -l)
+cnt2=$(aur repo-parse --list-attr | wc -l)
 (( cnt1 == cnt2 ))
 
 # check if output is valid JSON
@@ -49,3 +49,18 @@ json_cnt4=$(aur repo-parse -p "$core_files_path" --search 'aaaaaaaa' --json)
 
 # --json output with constrained entries
 aur repo-parse -p "$core_files_path" --json -s '^a' | jq '. | length' >/dev/null
+
+# --attr arguments
+aur repo-parse -p "$core_files_path" --attr '' || err=$?
+[[ $err == 2 ]]
+aur repo-parse -p "$core_files_path" --attr 'notafield' || err=$?
+[[ $err == 2 ]]
+list_cnt1=$(aur repo-parse -p "$core_files_path" --attr Name | wc -l)
+list_cnt2=$(aur repo-parse -p "$core_files_path" --list | wc -l)
+(( list_cnt1 == list_cnt2 ))
+
+# --search arguments
+aur repo-parse -p "$core_files_path" --list --search --search-by '' || err=$?
+[[ $err == 2 ]]
+aur repo-parse -p "$core_files_path" --list --search --search-by 'notafield' || err=$?
+[[ $err == 2 ]]
