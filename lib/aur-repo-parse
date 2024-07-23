@@ -9,7 +9,7 @@ use File::Basename;
 use AUR::Json qw(write_json);
 my $argv0 = 'repo-parse';
 
-our %repo_add_attributes = (
+my %repo_add_attributes = (
     'ARCH'         => ['string',  'Arch'         ],
     'BASE'         => ['string',  'PackageBase'  ],
     'DESC'         => ['string',  'Description'  ],
@@ -36,9 +36,6 @@ our %repo_add_attributes = (
     'ISIZE'        => ['numeric', 'ISize'        ]
 );
 
-sub list_attr {
-    return sort(keys %repo_add_attributes);
-}
 sub check_attr {
     my ($attr) = @_;
     return $repo_add_attributes{$attr}->[1];
@@ -46,6 +43,21 @@ sub check_attr {
 sub check_type {
     my ($attr) = @_;
     return $repo_add_attributes{$attr}->[0];
+}
+sub check_option {
+    my ($opt, $opt_label, $attr_def) = @_;
+
+    if (length $opt) {
+        my $attr = check_attr(uc($opt));
+
+        if (not defined $attr) {
+            say STDERR "$argv0: $opt_label: unknown attribute '$opt'";
+            exit(2);
+        }
+        return $attr;
+    } else {
+        return $attr_def;
+    }
 }
 
 sub parse_db {
@@ -238,22 +250,6 @@ sub repo_attr {
     }
 }
 
-sub check_option {
-    my ($opt, $opt_label, $attr_def) = @_;
-
-    if (length $opt) {
-        my $attr = check_attr(uc($opt));
-
-        if (not defined $attr) {
-            say STDERR "$argv0: $opt_label: unknown attribute '$opt'";
-            exit(2);
-        }
-        return $attr;
-    } else {
-        return $attr_def;
-    }
-}
-
 unless (caller) {
     use Getopt::Long;
     my $opt_json = 0;
@@ -291,7 +287,7 @@ unless (caller) {
         $opt_stdin = 1;
     }
     elsif ($opt_list_attr) {
-        say join("\n", list_attr());
+        say join("\n", sort(keys %repo_add_attributes));
         exit(0);
     }
     elsif (scalar(@opt_db_path) < 1 and not $opt_stdin) {
