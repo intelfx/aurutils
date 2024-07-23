@@ -6,7 +6,8 @@ use v5.20;
 use List::Util qw(first);
 use Carp;
 use Exporter qw(import);
-our @EXPORT_OK = qw(vercmp recurse prune graph solve);
+use AUR::Vercmp qw(vercmp);
+our @EXPORT_OK = qw(recurse prune graph);
 our $VERSION = 'unstable';
 
 # Maximum number of calling the callback
@@ -18,7 +19,7 @@ AUR::Depends - Resolve dependencies from AUR package information
 
 =head1 SYNOPSIS
 
-  use AUR::Depends qw(vercmp recurse depends prune graph solve);
+  use AUR::Depends qw(recurse prune graph);
 
 =head1 DESCRIPTION
 
@@ -27,63 +28,6 @@ AUR::Depends - Resolve dependencies from AUR package information
 Alad Wenter <https://github.com/AladW/aurutils>
 
 =cut
-
-sub vercmp_run {
-    if (defined $ENV{'AUR_DEBUG'}) {
-        say STDERR __PACKAGE__ . ': vercmp ' . join(" ", @_);
-    }
-    my @command = ('vercmp', @_);
-    my $child_pid = open(my $fh, "-|", @command) or die $!;
-    my $num;
-
-    if ($child_pid) {
-        $num = <$fh>;
-        waitpid($child_pid, 0);
-    }
-    die __PACKAGE__ . ": vercmp failure" if $?;
-    return $num;
-}
-
-sub vercmp_ops {
-    my %ops = (
-        '<'  => sub { $_[0] <  $_[1] },
-        '>'  => sub { $_[0] >  $_[1] },
-        '<=' => sub { $_[0] <= $_[1] },
-        '>=' => sub { $_[0] >= $_[1] },
-    );
-    return %ops;
-}
-
-=head2 vercmp()
-
-This function provides a simple way to call C<vercmp(8)> from perl code.
-Instead of ordering versions on the command-line, this function takes
-an explicit comparison operator (<, >, =, <= or >=) as argument.
-
-Under the hood, this function calls the C<vercmp> binary explicitly.
-This avoids any rebuilds for C<libalpm.so> soname bumps. To keep the approach
-performant, C<vercmp> is only called when input versions differ.
-
-=cut
-
-sub vercmp {
-    my ($ver1, $ver2, $op) = @_;
-    my %cmp = vercmp_ops();
-
-    if (not defined $ver2 or not defined $op) {
-        return "true";  # unversioned dependency
-    }
-    elsif ($op eq '=') {
-        return $ver1 eq $ver2;
-    }
-    elsif (defined $cmp{$op}) {
-        # check if cmp(ver1, ver2) holds        
-        return $cmp{$op}->(vercmp_run($ver1, $ver2), 0);
-    }
-    else {
-        croak "invalid vercmp operation";
-    }
-}
 
 =head2 recurse()
 
@@ -337,57 +281,6 @@ sub prune {
     @removals = keys %{{ map { $_ => 1 } @removals }};
     # XXX: return complement dict instead of array
     return \@removals;
-}
-
-=head2 solve()
-
-High-level function which combines C<recurse>, C<prune> and C<graph>.
-
-Parameters:
-
-=over
-
-=item C<$targets>
-
-=item C<$types>
-
-=item C<$callback>
-
-=item C<$opt_verify>
-
-=back
-
-=cut
-
-sub solve {
-    my ($targets, $types, $callback, $opt_verify, $opt_provides, $opt_installed) = @_;
-    
-    # Retrieve AUR results (JSON -> dict -> extract depends -> repeat until none)
-    my ($results, $pkgdeps, $pkgmap) = recurse($targets, $types, $callback);
-
-    # Verify dependency requirements
-    my ($dag, $dag_foreign) = graph($results, $pkgdeps, $pkgmap,
-                                    $opt_verify, $opt_provides);
-    my $removals = [];
-
-    # Remove virtual dependencies from dependency graph (#1063)
-    if ($opt_provides) {
-        my @virtual = keys %{$pkgmap};
-
-        # XXX: assumes <pkgmap> only contains keys with provides != pkgname
-        $removals = prune($dag, \@virtual);
-    }
-    # Remove transitive dependencies for installed targets (#592)
-    # XXX: prune from $dag_foreign as well?
-    if (scalar @{$opt_installed}) {
-        $removals = prune($dag, $opt_installed);
-    }
-    # Remove packages no longer in graph from results
-    if (scalar @{$removals}) {
-        map { delete $results->{$_} } @{$removals};
-    }
-    # Return $dag for subsequent application of C<prune>
-    return $results, $dag, $dag_foreign;
 }
 
 # vim: set et sw=4 sts=4 ft=perl:

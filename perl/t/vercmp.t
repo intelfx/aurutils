@@ -5,9 +5,9 @@ use v5.20;
 use Test::More;
 
 # Check if module can be imported
-require_ok "AUR::Depends";
+require_ok "AUR::Vercmp";
 
-use AUR::Depends qw(vercmp recurse prune graph solve);
+use AUR::Vercmp qw(vercmp);
 
 ok(vercmp("1.0", "1.0", '='));
 ok(vercmp("1.0a", "1.0b", '<'));
