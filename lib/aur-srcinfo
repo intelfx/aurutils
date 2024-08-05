@@ -45,8 +45,8 @@ get_srcinfo() {
 }
 
 ## option parsing
-opt_short='MC:NUPJQ'
-opt_long=('multiple' 'directory:' 'no-update' 'update' 'parse' 'json' 'jq')
+opt_short='MC:NUPJQr'
+opt_long=('multiple' 'directory:' 'no-update' 'update' 'parse' 'json' 'jq' 'raw-output')
 opt_hidden=('dump-options')
 
 if opts=$(getopt -o "$opt_short" -l "$(args_csv "${opt_long[@]}" "${opt_hidden[@]}")" -n "$argv0" -- "$@"); then
@@ -72,6 +72,14 @@ while true; do
             mode='json' ;;
         -Q|--jq)
             mode='jq' ;;
+        # usability: parse -r/--raw-output (which is a jq(1) option) to allow
+        # typing `aur srcinfo -Q -r EXPR` instead of `aur srcinfo -Q -- -r EXPR`
+        -r|--raw-output)
+            if ! [[ $mode == jq ]]; then
+                printf >&2 "%s: %s is only allowed after %s" "$argv0" "$1" "--jq"
+                exit 2
+            fi
+            jq_args+=("$1") ;;
         --dump-options)
             printf -- '--%s\n' "${opt_long[@]}" ${AUR_DEBUG+"${opt_hidden[@]}"}
             printf -- '%s' "${opt_short}" | sed 's/.:\?/-&\n/g'
@@ -97,7 +105,7 @@ if (( ! update )) && [[ $mode == update ]]; then
 fi
 
 if [[ $mode == jq ]]; then
-    jq_args=("$@")
+    jq_args+=("$@")
 elif (( multiple )); then
     dirs=("$@")
 elif [[ ! ${dirs+set} ]] && (( $# == 1 )); then
