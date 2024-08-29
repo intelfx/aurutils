@@ -1,5 +1,8 @@
 ## 20
 
+* `aur-chroot`
+  + run `--status` if no modes are specified
+
 * `aur-sync`
   + move git `orderFile` to `XDG_CONFIG_HOME/aurutils/view/orderfile` (#1167)
 

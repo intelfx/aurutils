@@ -186,7 +186,7 @@ fi
 
 # Print paths to container and used makepkg/pacman paths. This does
 # not require a priorly created container.
-if (( status )); then
+if (( status )) || ! (( update + build + create )); then
     printf 'chroot:%s\npacman:%s\nmakepkg:%s\n' "$directory" "$pacman_conf" "$makepkg_conf"
     exit 0
 fi
@@ -234,6 +234,9 @@ if (( create )); then
     if [[ ! -d $directory/root ]]; then
         # shellcheck disable=SC2086
         $AUR_PACMAN_AUTH mkarchroot -C "$pacman_conf" -M "$makepkg_conf" "$directory"/root "${base_packages[@]}"
+    else
+        printf '%s: --create: there is nothing to do\n' "$argv0"
+        create=0
     fi
 fi >&2
 
