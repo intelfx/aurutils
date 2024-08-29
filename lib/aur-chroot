@@ -235,7 +235,6 @@ if (( create )); then
         # shellcheck disable=SC2086
         $AUR_PACMAN_AUTH mkarchroot -C "$pacman_conf" -M "$makepkg_conf" "$directory"/root "${base_packages[@]}"
     else
-        printf '%s: --create: there is nothing to do\n' "$argv0"
         create=0
     fi
 fi >&2
