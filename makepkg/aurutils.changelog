@@ -4,6 +4,11 @@
   + add `AUR_MAKEPKG_GNUPGHOME`, `--makepkg-gnupghome`
   + propagate `LOGDEST` to `aur-chroot`
 
+* `aur-sync`
+ + retrieve PGP keys to `AUR_SYNC_GNUPGHOME` keyring
+    - keyring defaults to `$XDG_DATA_HOME/aurutils/sync/gnupg`
+    - disable with `--no-key-retrieve`
+
 ## 20.1
 
 * `aur-chroot`
