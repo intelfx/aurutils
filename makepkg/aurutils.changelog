@@ -1,3 +1,9 @@
+## 21
+
+* `aur-build`
+  + add `AUR_MAKEPKG_GNUPGHOME`, `--makepkg-gnupghome`
+  + propagate `LOGDEST` to `aur-chroot`
+
 ## 20.1
 
 * `aur-chroot`

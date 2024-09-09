@@ -86,7 +86,7 @@ opt_long=('arg-file:' 'chroot' 'database:' 'force' 'root:' 'sign' 'gpg-sign'
           'makepkg-conf:' 'bind:' 'bind-rw:' 'prevent-downgrade' 'temp'
           'syncdeps' 'clean' 'namcap' 'checkpkg' 'makepkg-args:' 'user:'
           'margs:' 'buildscript:' 'null' 'dbext:' 'cleanbuild' 'cargs:'
-          'makechrootpkg-args:')
+          'makechrootpkg-args:' 'makepkg-gnupghome:')
 opt_hidden=('dump-options' 'ignorearch' 'noconfirm' 'nocheck' 'nosync' 'repo:'
             'results:' 'results-append:' 'status')
 
@@ -119,6 +119,8 @@ while true; do
         --makepkg-conf)
             shift; makepkg_conf=$1
             chroot_args+=(--makepkg-conf "$1") ;;
+        --makepkg-gnupghome)
+            shift; AUR_MAKEPKG_GNUPGHOME="$1" ;;
         --pacman-conf)
             shift; pacman_conf=$1
             chroot_args+=(--pacman-conf "$1") ;;
@@ -202,6 +204,12 @@ done
 
 # Assign environment variables
 db_ext=${db_ext:-$AUR_DBEXT} db_name=${db_name:-$AUR_REPO} db_root=${db_root:-$AUR_DBROOT}
+
+# Set GNUPGHOME for makepkg if AUR_MAKEPKG_GNUPGHOME is set (#1129)
+makepkg_env=()
+if [[ -v AUR_MAKEPKG_GNUPGHOME ]]; then
+    makepkg_env+=("GNUPGHOME=$AUR_MAKEPKG_GNUPGHOME")
+fi
 
 # shellcheck disable=SC2174
 mkdir -pm 0700 -- "${TMPDIR:-/tmp}/aurutils-$UID"
@@ -388,10 +396,11 @@ while IFS= read "${read_args[@]}" -ru "$fd" path; do
 
     if (( create_package )); then
         if (( chroot )); then
-            PKGDEST="$var_tmp" aur chroot "${chroot_args[@]}" --build "${chroot_build_args[@]}"
+            env PKGDEST="$var_tmp" LOGDEST="${LOGDEST:-$PWD}" "${makepkg_env[@]}" \
+                aur chroot "${chroot_args[@]}" --build "${chroot_build_args[@]}"
         else
             #shellcheck disable=SC2086
-            PKGDEST="$var_tmp" LOGDEST="${LOGDEST:-$PWD}" \
+            env PKGDEST="$var_tmp" LOGDEST="${LOGDEST:-$PWD}" "${makepkg_env[@]}" \
                 ${AUR_MAKEPKG:-makepkg} "${makepkg_common_args[@]}" "${makepkg_args[@]}"
         fi
 

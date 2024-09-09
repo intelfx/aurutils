@@ -152,6 +152,15 @@ operations. For chroot builds, the file is also used inside the container.
 .RB ( makepkg " " \-\-config ", " aur\-chroot " " \-\-makepkg\-conf ).
 .
 .TP
+.BI \-\-makepkg\-gnupghome= PATH
+The
+.BR gpg (1)
+home directory used with
+.BR makepkg (8)
+or
+.BR aur\-chroot (1).
+.
+.TP
 .BI \-\-pacman\-conf= FILE
 The file used for retrieving local repositories
 .RB ( aur\-repo " " \-\-config ).
@@ -320,6 +329,17 @@ options if
 .B aur\-build \-\-pkgver
 is used.
 .
+.TP
+.B AUR_MAKEPKG_GNUPGHOME
+Directory where the 
+.BR gpg (1)
+keyring for usage with
+.BR makepkg (8)
+or
+.BR aur\-chroot (1)
+is stored. This variable takes precedence over
+.BR GNUPGHOME .
+.
 .B AUR_BUILD_PKGLIST
 The command used to check for built packages in the local
 repository. Defaults to
@@ -337,7 +357,7 @@ The command used to sign packages. The arguments
 and
 .BR \-\-no\-armor
 must be supported by this command.
-
+.
 .TP
 .B AUR_REPO_ADD
 The command used to update the local repository. Any
