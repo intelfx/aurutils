@@ -107,6 +107,7 @@
   + detect local repositories with `--chroot` configuration (#1135)
   + add `--clean` / `-C`, `--cleanbuild`
     - default build command changed to `aur build --syncdeps`
+  + add `aur-sync--filter` helper (#1136, #1140)
 
 * `aur(1)`
   + use `git-clean -ixd` to clean directories with `aur-gc`
