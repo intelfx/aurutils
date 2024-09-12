@@ -397,17 +397,20 @@ if (( auto_key_retrieve )); then
 
     # Retrieve unique set of gpg keys to be imported
     while IFS= read -r path; do
-        mapfile -t keys < <(pacini "$path"/.SRCINFO 'validpgpkeys')
+        if [[ -f $path/.SRCINFO ]]; then
+            mapfile -t keys < <(pacini "$path"/.SRCINFO 'validpgpkeys')
 
-        for key in "${keys[@]}"; do
-            keys_uniq[$key]=1
-        done
+            for key in "${keys[@]}"; do
+                keys_uniq[$key]=1
+            done
+        fi
     done < "$tmp"/queue
 
     if (( ${#keys_uniq[@]} )); then
         printf >&2 '%s: importing key %s\n' "${!keys_uniq[@]}"
         GNUPGHOME="$AUR_SYNC_GNUPGHOME" gpg --recv-keys "${!keys_uniq[@]}" >&2
     fi
+
     # Pass on verified keys to makepkg
     build_args+=(--makepkg-gnupghome="$AUR_SYNC_GNUPGHOME")
 fi
