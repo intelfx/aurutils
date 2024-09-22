@@ -5,9 +5,9 @@
   + propagate `LOGDEST` to `aur-chroot`
 
 * `aur-sync`
- + retrieve PGP keys to `AUR_SYNC_GNUPGHOME` keyring
-    - keyring defaults to `$XDG_DATA_HOME/aurutils/sync/gnupg`
-    - disable with `--no-key-retrieve`
+ + add `--auto-key-retrieve`
+   - retrieve PGP keys to `AUR_SYNC_GNUPGHOME` keyring
+   - keyring defaults to `$XDG_DATA_HOME/aurutils/sync/gnupg`
 
 ## 20.1
 

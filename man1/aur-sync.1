@@ -257,9 +257,14 @@ Do not wait for user input when installing or removing build dependencies.
 Print target packages and their paths instead of building them.
 .
 .TP
-.BR \-\-nokeyretrieve ", " \-\-no\-key\-retrieve
-Do not automatically import PGP keys to
-.BR AUR_SYNC_GNUPGHOME .
+.BR \-K ", " \-\-autokeyretrieve ", " \-\-auto\-key\-retrieve
+Automatically import PGP keys to
+.BR AUR_SYNC_GNUPGHOME ,
+based on the
+.B validpgpkeys
+array in
+.B .SRCINFO
+files.
 .
 .TP
 .BR \-C ", " \-\-clean
