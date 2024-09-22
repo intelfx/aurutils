@@ -186,7 +186,7 @@ fi
 
 # Print paths to container and used makepkg/pacman paths. This does
 # not require a priorly created container.
-if (( status )) || ! (( update + build + create )); then
+if (( status )) || ! (( update + build + create + print_path )); then
     printf 'chroot:%s\npacman:%s\nmakepkg:%s\n' "$directory" "$pacman_conf" "$makepkg_conf"
     exit 0
 fi
