@@ -74,6 +74,17 @@ usage() {
     exit 1
 }
 
+# Clarify tsort errors (#1039)
+diag_depcycle() {
+	echo >&2 'Error:'
+
+cat <<EOF | pr -to 4 >&2
+aur-$argv0 encountered a cycle while resolving dependencies. This may be caused
+by an error in the PKGBUILD or by cyclic checkdepends. For the latter, retry
+building the package(s) with --no-check.
+EOF
+}
+
 source /usr/share/makepkg/util/message.sh
 
 if [[ ! -v NO_COLOR ]] && [[ ! -v AUR_DEBUG ]]; then
@@ -372,7 +383,7 @@ aur sync--filter -p "$tmp"/depends.jsonl -f "$tmp"/filter >"$tmp"/graph
 # a less nice diagnostic on cycles), or fetches done in an arbitrary order
 # (e.g. sort -u) with checks for cycles done at build-time.
 if ! tsort <"$tmp"/graph >"$tmp"/queue; then
-    printf >&2 '%s: dependency cycle detected\n' "$argv0"
+    diag_depcycle
     exit 22
 fi
 
@@ -427,7 +438,10 @@ if (( graph )); then
     fi <"$tmp"/queue >"$tmp"/graph
 
     # Recompute dependencies to include `provides` (#837)
-    tsort < "$tmp"/graph >"$tmp"/queue || exit 22
+    if ! tsort < "$tmp"/graph >"$tmp"/queue; then
+        diag_depcycle
+        exit 22
+    fi
 fi
 
 { # Sort dependencies (`aur-sync--ninja`, `--columns`)

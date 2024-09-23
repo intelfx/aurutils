@@ -5,10 +5,11 @@
   + propagate `LOGDEST` to `aur-chroot`
 
 * `aur-sync`
- + add `--auto-key-retrieve`
-   - retrieve PGP keys to `AUR_SYNC_GNUPGHOME` keyring
-   - keyring defaults to `$XDG_DATA_HOME/aurutils/sync/gnupg`
-
+  + add `--auto-key-retrieve`
+    - retrieve PGP keys to `AUR_SYNC_GNUPGHOME` keyring
+    - keyring defaults to `$XDG_DATA_HOME/aurutils/sync/gnupg`
+  + add diagnostic for tsort failure (#1039)
+ 
 ## 20.1
 
 * `aur-chroot`
