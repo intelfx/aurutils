@@ -20,6 +20,11 @@ A brief overview of local repositories is given in the
 section.
 .
 .SH AUR COMMANDS
+We divide
+.B aur
+commands into high level commands and low level commands. The low level
+comands support development of high level or alternative commands.
+.PP
 The below gives a short overview; see the respective documentation for
 details.
 .PP
@@ -34,18 +39,12 @@ through the
 environment variable, for example
 .IR /usr/local/lib/aurutils:/usr/lib/aurutils .
 .
+.SH HIGH-LEVEL COMMANDS
 .P
 .BR aur\-build (1)
 .RS 4
 Build packages to a local repository.
 .RE
-.
-.P
-.BR aur\-chroot (1)
-.RS 4
-Build pacman packages with systemd-nspawn.
-.RE
-.
 .P
 .BR aur\-depends (1)
 .RS 4
@@ -56,12 +55,6 @@ Retrieve dependencies using aurweb.
 .BR aur\-fetch (1)
 .RS 4
 Fetch packages from a location.
-.RE
-.
-.P
-.BR aur\-format (1)
-.RS 4
-Format AurJson output to text strings.
 .RE
 .
 .P
@@ -77,21 +70,9 @@ Print the AUR package list.
 .RE
 .
 .P
-.BR aur\-query (1)
-.RS 4
-Send GET requests to the aurweb RPC interface.
-.RE
-.
-.P
 .BR aur\-repo (1)
 .RS 4
 Manage local repositories.
-.RE
-.
-.P
-.BR aur\-repo\-filter (1)
-.RS 4
-Filter packages in the Arch Linux repositories.
 .RE
 .
 .P
@@ -101,17 +82,42 @@ Search for AUR packages.
 .RE
 .
 .P
-.BR aur\-srcver (1)
-.RS 4
-List version of VCS packages.
-.RE
-.
-.P
 .BR aur\-sync (1)
 .RS 4
 Download and build AUR packages automatically.
 .RE
 .
+.SH LOW-LEVEL COMMANDS
+.P
+.BR aur\-chroot (1)
+.RS 4
+Build pacman packages with systemd-nspawn.
+.RE
+.
+.P
+.BR aur\-format (1)
+.RS 4
+Format AurJson output to text strings.
+.RE
+.
+.P
+.BR aur\-query (1)
+.RS 4
+Send GET requests to the aurweb RPC interface.
+.RE
+.
+.P
+.BR aur\-repo\-filter (1)
+.RS 4
+Filter packages in the Arch Linux repositories.
+.RE
+.
+.P
+.BR aur\-srcver (1)
+.RS 4
+List version of VCS packages.
+.RE
+
 .P
 .BR aur\-vercmp (1)
 .RS 4
