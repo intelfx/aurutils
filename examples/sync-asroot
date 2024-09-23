@@ -9,6 +9,13 @@ argv0=sync-asroot
 # default options
 build_args=(-LR --chroot) sync_args=() keep_going=1
 
+# colors (for build summary)
+source /usr/share/makepkg/util/message.sh
+
+if [[ ! -v NO_COLOR ]] && [[ ! -v AUR_DEBUG ]]; then
+    [[ -t 2 ]] && colorize
+fi
+
 # option parsing
 unset build_user
 while getopts :U:d:k:fSuN OPT; do
@@ -46,4 +53,19 @@ if [[ -s $ninja_dir/graph ]]; then
         env AUR_ASROOT=1 "${build_env[@]}" aur build "${build_args[@]}"
 
     env NINJA_STATUS='[%s/%t] ' ninja -C "$ninja_dir" -k "$keep_going"
+
+    # The following is taken from aur-sync, but we want the build results always.
+    #
+    # Print all targets in dependency order
+    NINJA_STATUS='[%s/%t] ' ninja -nC /var/empty -f "$ninja_dir"/build.ninja | \
+        # [\w@\.\-\+]: valid characters for pkgname
+        # alternative: [^\s]+ from rule `env -C ... > pkgbase.stamp`
+        pcregrep -o1 -o3 '(\[\d+/\d+\] )(.+?)([\w@\.\-\+]+)(\.stamp)' | while read -r status pkg
+    do
+        if [[ -f $ninja_dir/$pkg.stamp ]]; then
+            printf "${BOLD}${BLUE}%s${ALL_OFF} %s\t${BOLD}${GREEN}[OK]${ALL_OFF}\n" "$status" "$pkg"
+        else
+            printf "${BOLD}${BLUE}%s${ALL_OFF} %s\t${BOLD}${RED}[FAIL]${ALL_OFF}\n" "$status" "$pkg"
+        fi
+    done | column -t
 fi
