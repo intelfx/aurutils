@@ -1,4 +1,4 @@
-## 21
+## 20.2
 
 * `aur-build`
   + add `AUR_MAKEPKG_GNUPGHOME`, `--makepkg-gnupghome`
