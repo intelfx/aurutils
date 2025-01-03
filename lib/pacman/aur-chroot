@@ -212,7 +212,7 @@ esac
 while read -r key _ value; do
     case $key=$value in
         Server=file://*)
-            bindmounts_rw+=("${value#file://}") ;;
+            bindmounts_ro+=("${value#file://}") ;;
     esac
 done < <(pacman-conf --config "$pacman_conf")
 wait "$!"
