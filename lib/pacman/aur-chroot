@@ -239,7 +239,12 @@ if (( create )); then
         $AUR_PACMAN_AUTH install -d "$directory" -m 755 -v
     fi
 
-    if [[ ! -d $directory/root ]]; then
+    # more thorough sanity check to detect half-created chroots (failed mkarchroot)
+    if [[ ! -d $directory/root \
+       || ! -f $directory/root/.arch-chroot ]]; then
+        # clean up old chroot contents, if any (if a previous mkarchroot failed)
+        # XXX: needs patched mkarchroot (otherwise it expects an absent directory, not just empty)
+        [[ ! -d $directory/root ]] || $AUR_PACMAN_AUTH find "$directory"/root -mindepth 1 -maxdepth 1 -exec rm -rf {} +
         # shellcheck disable=SC2086
         $AUR_PACMAN_AUTH mkarchroot -C "$pacman_conf" -M "$makepkg_conf" "$directory"/root "${base_packages[@]}"
     else
@@ -260,7 +265,8 @@ if (( update )); then
     # shellcheck disable=SC2086
     $AUR_PACMAN_AUTH arch-nspawn -C "$pacman_conf" -M "$makepkg_conf" "$directory"/root \
          "${bindmounts_ro[@]/#/--bind-ro=}" \
-         "${bindmounts_rw[@]/#/--bind=}" pacman -Syu --noconfirm "$@"
+         "${bindmounts_rw[@]/#/--bind=}" pacman -Syu --noconfirm "$@" \
+        ||:
 fi >&2
 
 # print path for processing by other tools (e.g. makepkg --packagelist)
