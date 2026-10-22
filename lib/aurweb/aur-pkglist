@@ -31,11 +31,11 @@ http_last_modified() {
 }
 
 list_fetch() {
-    curl -A aurutils -f "$1" "${@:2}" --remote-name
+    curl -q -A aurutils -f "$1" "${@:2}" --remote-name
 }
 
 list_headers() {
-    curl -A aurutils -f "$1" --head -Ss
+    curl -q -A aurutils -f "$1" --head -Ss
 }
 
 opt_short='t:bqsivFPu'

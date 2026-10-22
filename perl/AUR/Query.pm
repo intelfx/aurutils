@@ -51,7 +51,7 @@ sub urlencode {
 }
 
 sub query_curl {
-    my @cmd = ('curl', '-A', 'aurutils', '-fgLsSq', @_);
+    my @cmd = ('curl', '-q', '-A', 'aurutils', '-fgLsS', @_);
     
     if (defined $ENV{'AUR_DEBUG'}) {
         say STDERR join(" ", map(qq/'$_'/, @cmd));
